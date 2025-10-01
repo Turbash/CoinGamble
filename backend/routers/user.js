@@ -1,47 +1,71 @@
 const router = require('express').Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
 
 const createUser = async (req, res) => {
-    const { username, email, password } = req.body;
-    try {
-        let user = await userModel.findOne({ email });
-        if (user) {
-            return res.status(400).send('User already exists');
-        }
-        bcrypt.genSalt(10, (err, salt) => {
-            bcrypt.hash(password, salt, async (err, hash) => {
-                let user = userModel.create({ username, email, password: hash });
-                let token = jwt.sign({ email, username }, process.env.JWT_SECRET);
-                return res.status(201).send({ message: "Registration Successful", token });
-            })
-        })
-    } catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).send('Internal Server Error');
+  const { username, email, password, role } = req.body; 
+  try {
+    let existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
     }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = await userModel.create({
+      username,
+      email,
+      password: hashedPassword,
+      role: role || 'collector' 
+    });
+
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email, role: newUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    return res.status(201).json({
+      message: 'Registration Successful',
+      token,
+      user: { id: newUser._id, username: newUser.username, role: newUser.role }
+    });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 const loginUser = async (req, res) => {
-     const { email, password } = req.body;
-    try {
-        let user = await userModel.findOne({ email });
-        if (!user) {
-            return res.send('User not found');
-        }
-        bcrypt.compare(password, user.password, (err, result) => {
-            if (result) {
-                let token = jwt.sign({ email, username: user.username }, process.env.JWT_SECRET);
-                return res.send({ message: "Login Successful", token });
-            }
-            else {
-                return res.send("Invalid Credentials");
-            }
-        })
+  const { email, password } = req.body;
+  try {
+    let user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-    catch (error) {
-        console.error('Error logging in user:', error);
-        res.send('Internal Server Error');
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
     }
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    return res.json({
+      message: 'Login Successful',
+      token,
+      user: { id: user._id, username: user.username, role: user.role }
+    });
+  } catch (error) {
+    console.error('Error logging in user:', error);
+    res.status(500).send('Internal Server Error');
+  }
 };
 
 router.post('/register', createUser);

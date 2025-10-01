@@ -1,5 +1,6 @@
 const express= require('express');
 const dotenv=require('dotenv');
+const path = require('path');
 dotenv.config();
 
 const app=express();
@@ -9,8 +10,12 @@ app.use(cors());
 
 const dbConnect = require('./db/db');
 const userRouter = require('./routers/user');
+const coinCollectorRouter = require('./routers/coinCollector');
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/users', userRouter);
+app.use('/coin-collector', coinCollectorRouter);
 
 app.get('/',(req,res)=>{
     res.send("Hello World");

@@ -1,6 +1,3 @@
-const router = require('express').Router();
-const coinModel = require('../models/coin');
-
 const multer = require('multer');
 const path = require('path');
 
