@@ -11,11 +11,16 @@ app.use(cors());
 const dbConnect = require('./db/db');
 const userRouter = require('./routers/user');
 const coinCollectorRouter = require('./routers/coinCollector');
+const coinExpertRouter = require('./routers/coinExpert');
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/users', userRouter);
-app.use('/coin-collector', coinCollectorRouter);
+app.use('/coins', coinCollectorRouter);
+app.use('/expert', coinExpertRouter);
 
 app.get('/',(req,res)=>{
     res.send("Hello World");
