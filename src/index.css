@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+body,html,#root {
+  @apply bg-gray-200;
+  @apply min-h-screen;
+  @apply text-gray-900;
+}

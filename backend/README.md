@@ -14,4 +14,4 @@ There are two type of users here, one the coin collectors and one the experts. C
 
 ### Deployment
 
-This backend is deployed on render free teir.
+This backend is deployed on render free tier.
