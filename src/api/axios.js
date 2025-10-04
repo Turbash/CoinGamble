@@ -37,8 +37,8 @@ export const getMyCoins = async () => {
 };
 
 export const getCoinById = async (id) => {
-  const res = await api.get(`/coins/${id}`);
-  return res.data;
+  const response = await api.get(`/coins/${id}`);
+  return response.data;
 };
 
 export const updateCoin = async (id, coinData) => {
