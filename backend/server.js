@@ -5,8 +5,13 @@ dotenv.config();
 
 const app=express();
 
-const cors = require('cors');   
-app.use(cors());
+const cors = require('cors'); 
+
+const corsOptions = {
+    origin: 'https://coin-gamble.vercel.app',    
+};
+
+app.use(cors(corsOptions)); 
 
 const dbConnect = require('./db/db');
 const userRouter = require('./routers/user');
